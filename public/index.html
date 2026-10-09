@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SY Chat Web -Connect the Earth with SY Chat Web. A simple and secure web chat application. Chat with friends and colleagues in real-time.">
+    <meta name="author" content="Sigui Yohan">
+    <meta name="keywords" content="chat, online chat, secured chat, SY Chat Web, SY Chat, web chat, real-time chat">
+    <title>SY Chat Web</title>
+    <link rel='icon' type='image/x-icon' href='chat.ico'>
+    <link rel='stylesheet' href="systyle.css">
+    <link rel='manifest' href='manifest.json'>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen flex flex-col justify-between overflow-hidden">
+    <div id="loading-screen" class=" hidden fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-50">
+        <img src="chat.png" alt="Chat Logo" class="w-20 h-20 object-contain mb-4 animate-pulse-zoom">
+        <div class="text-indigo-400 font-bold text-xl animate-pulse">SY Loading... 🚀</div>
+    </div>
+    <div id="auth-modal" class="fixed inset-0 bg-gradient-to-br from-blue-950/80 via-red-950/80 to-yellow-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
+        <div class="p-[3px] rounded-2xl bg-gradient-to-r from-blue-600 via-red-500 to-yellow-400 shadow-2xl w-full max-w-sm">
+            <div class="bg-slate-800 rounded-xl p-6 w-full">
+                <div id="login-form">
+                    <div class="flex justify-center mb-3">
+                        <div class="bg-indigo-600/20 p-2 rounded-full flex items-center justify-center border border-red-500">
+                            <img src="chat.png" alt="Chat Logo" class="w-8 h-8 object-contain">
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold mb-4 text-center text-indigo-400">SY Chat Web 🌐</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Username</label>
+                            <input type="text" id="login-username" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-400" autofocus>
+                            <p id="login-user-error" class="text-red-400 text-xs mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
+                            <input type="password" id="login-password" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-400">
+                            <p id="login-pass-error" class="text-red-400 text-xs mt-1 hidden"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6">
+                        <button id="create-account-btn" type="button" class="hover:text-button text-button hover:text-borders text-borders font-medium">Create Account</button>
+                        <button id="login-btn" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition border border-yellow-400">Login</button>
+                    </div>
+                </div>
+                <div id="create-form" class="hidden">
+                    <div class="flex justify-center mb-3">
+                        <div class="bg-indigo-600/20 p-2 rounded-full flex items-center justify-center border border-red-500">
+                            <img src="chat.png" alt="Chat Logo" class="w-8 h-8 object-contain">
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold mb-4 text-center text-indigo-400">Create Account ✨</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Username</label>
+                            <input type="text" id="create-username" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-400">
+                            <p id="create-user-error" class="text-red-400 text-xs mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
+                            <input type="password" id="create-password" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-400">
+                            <p id="create-pass-error" class="text-red-400 text-xs mt-1 hidden"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-6">
+                        <button id="back-to-login-btn" type="button" class="text-button text-borders hover:text-button hover:text-borders font-medium">Back to Login</button>
+                        <button id="create-btn" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition border border-yellow-400">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="room-modal" class="fixed inset-0 bg-gradient-to-br from-blue-950/80 via-red-950/80 to-yellow-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
+        <div class="p-[3px] rounded-2xl bg-gradient-to-r from-blue-600 via-red-500 to-yellow-400 shadow-2xl w-full max-w-sm">
+            <div class="bg-slate-800 rounded-xl p-6 w-full">
+                <h2 class="text-xl font-bold mb-2 text-center text-indigo-400">🚪 Join a Chat Room</h2>
+                <p class="text-xs text-slate-400 text-center mb-4">Type a room name to chat.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Chat Room Name</label>
+                        <input type="text" id="room-name-input" placeholder="e.g. general, gaming" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-400">
+                        <p id="room-error" class="text-red-400 text-xs mt-1 hidden"></p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mt-6">
+                    <button class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded-lg font-medium text-sm transition border border-red-500">Exit</button>
+                    <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition border border-yellow-400">Join Room</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="report-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+            <h3 class="text-base font-bold text-red-400 flex items-center gap-2">🚨 Report Message</h3>
+            <p class="text-xs text-slate-400">Please state why you are reporting this message for cyberbullying or harassment:</p>
+            <textarea id="report-reason-input" rows="3" placeholder="Describe the issue..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-red-500 resize-none"></textarea>
+            <div class="flex justify-end gap-2">
+                <button class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">Cancel</button>
+                <button class="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">Submit Report</button>
+            </div>
+        </div>
+    </div>
+    <div id="notifications-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2">🔔 Notifications</h3>
+                <button class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div id="notifications-list" class="space-y-2 max-h-60 overflow-y-auto">
+                <p class="text-xs text-slate-400 italic">No notifications yet.</p>
+            </div>
+            <div class="flex justify-end">
+                <button class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="events-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-blue-500/50 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2">🎉 Events</h3>
+                <button type="button" class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <div id="events-birth-form" class="space-y-3 hidden">
+                <p class="text-xs text-slate-300">When is your birthday? It is saved on the server so we can celebrate it with you.</p>
+                <input id="events-birth-input" type="date" min="1900-01-01" class="w-full bg-slate-900 border-2 border-blue-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400">
+                <p id="events-error" class="text-xs text-red-400 hidden"></p>
+                <div class="flex justify-end gap-2">
+                    <button id="events-cancel-btn" type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">Cancel</button>
+                    <button id="events-save-btn" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold border border-yellow-400">Save</button>
+                </div>
+            </div>
+
+            <div id="events-body" class="space-y-3 hidden"></div>
+
+            <div id="events-footer" class="flex justify-between items-center hidden">
+                <button id="events-change-btn" type="button" class="text-button text-borders text-xs font-medium hover:text-button hover:text-borders">Change birth date</button>
+                <button type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-blue-500/50 rounded-2xl p-6 w-full max-w-md space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-indigo-400">👤 My Profile</h3>
+                <button type="button" class="text-slate-400 hover:text-white text-lg">✕</button>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+                <div id="profile-avatar-preview" class="profile-avatar-preview">
+                    <span id="profile-avatar-initial">?</span>
+                </div>
+                <div class="flex gap-2 flex-wrap justify-center">
+                    <button type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-medium border border-yellow-400">📸 Take Photo</button>
+                    <button type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-xs font-medium border border-blue-500">🖼️ Upload Photo/GIF</button>
+                    <button type="button" class="bg-red-700/80 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium">🗑️ Remove</button>
+                </div>
+                <input type="file" id="profile-avatar-input" accept="image/*,.gif" hidden>
+                <p class="text-[11px] text-slate-400 text-center">Photos and animated GIFs are supported. Your avatar is stored locally in this browser.</p>
+            </div>
+            <div class="border-t border-slate-700 pt-4 space-y-3">
+                <h4 class="text-sm font-bold text-slate-200">🔐 Change Password</h4>
+                <input id="profile-current-password" type="password" autocomplete="current-password" placeholder="Current password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                <input id="profile-new-password" type="password" autocomplete="new-password" placeholder="New password (8+ characters)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                <input id="profile-confirm-password" type="password" autocomplete="new-password" placeholder="Confirm new password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                <p id="profile-password-error" class="text-red-400 text-xs hidden"></p>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-lg text-xs font-medium">Cancel</button>
+                <button type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold border border-yellow-400">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div id="gif-library-modal" class="gif-library-modal hidden">
+        <div class="gif-library-panel" role="dialog" aria-modal="true" aria-labelledby="gif-library-title">
+            <div class="gif-library-head">
+                <div>
+                    <h3 id="gif-library-title" class="text-base font-bold text-pink-400">🎞️ GIF Library</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Search millions of GIFs online and send one instantly.</p>
+                </div>
+                <button type="button" class="text-slate-400 hover:text-white text-lg">✕</button>
+            </div>
+            <div class="p-3 pb-0">
+                <input id="gif-library-search" class="gif-library-search w-full" type="search" placeholder="Search GIPHY..." autocomplete="off">
+            </div>
+            <div id="gif-library-tabs" class="gif-library-tabs"></div>
+            <div id="gif-library-grid" class="gif-library-grid"></div>
+            <div class="gif-library-foot">
+                <div class="gif-powered">Powered by <strong>GIPHY</strong></div>
+                    <div class="gif-key-row">
+                        <button type="button" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-xs">Close</button>
+                    </div>
+            </div>
+        </div>
+    </div>
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-yellow-500/50 rounded-xl p-6 w-full max-w-lg space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">🛡️ Admin Panel - Room Reports</h3>
+                <button class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div class="border border-slate-700 rounded-lg p-3 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-sm font-bold text-amber-300">⚙️ Room Management</h4>
+                    <button class="bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">
+                        🗑️ Delete Room
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-400">Ban users from <span id="admin-room-name" class="text-indigo-300"></span> or permanently delete this room.</p>
+                <div id="admin-members-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-400 italic">No users to manage.</p>
+                </div>
+            </div>
+            <div id="admin-reports-list" class="space-y-3 max-h-85 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-400 italic">No reports submitted for this room.</p>
+            </div>
+            <div class="flex justify-end">
+                <button class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">Close</button>
+            </div>
+        </div>
+    </div>
+    <header class="app-header bg-slate-800 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <h1 class="font-bold text-indigo-400" id="header-title">SY Chat Web</h1>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <span id="current-room-display" class="text-xs bg-indigo-950 border border-blue-500 px-2.5 py-1 rounded-full text-indigo-300"></span>
+            <div class="relative" id="user-dropdown-container">
+                <span id="current-user-display" class="text-xs bg-slate-700 border border-yellow-400 px-2.5 py-1 rounded-full text-slate-300 cursor-pointer flex items-center gap-1.5"></span>
+                <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-1.5 z-50 hidden flex-col gap-1">
+                    <div class="relative flex items-center gap-2 px-2.5 py-1.5 hover:bg-slate-700/60 rounded-lg cursor-pointer transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                        <span class="text-xs text-slate-200 font-medium">Notifications</span>
+                    </div>
+                    <div class="relative flex items-center gap-2 px-2.5 py-1.5 hover:bg-slate-700/60 rounded-lg cursor-pointer transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-8a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 10c-5 0-9 2.24-9 5v3h18v-3c0-2.76-4-5-9-5Zm-7 6v-1c0-1.39 3.13-3 7-3s7 1.61 7 3v1H5Z"/>
+                        </svg>
+                        <span class="text-xs text-slate-200 font-medium">Profile</span>
+                    </div>
+                    <div id="admin-menu-option" class="relative hidden items-center gap-2 px-2.5 py-1.5 hover:bg-amber-500/20 rounded-lg cursor-pointer transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                        </svg>
+                        <span class="text-xs text-amber-300 font-medium">Admin Panel</span>
+                    </div>
+                    <div class="relative flex items-center gap-2 px-2.5 py-1.5 hover:bg-slate-700/60 rounded-lg cursor-pointer transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-yellow-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                        </svg>
+                        <span class="text-xs text-slate-200 font-medium">Events</span>
+                    </div>
+                    <div class="border-t border-slate-700/60 my-0.5"></div>
+                    <div class="relative flex items-center gap-2 px-2.5 py-1.5 hover:bg-red-600/20 text-red-400 rounded-lg cursor-pointer transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                        <span class="text-xs font-medium">Log out</span>
+                    </div>
+                </div>
+            </div>
+            <button class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition border border-red-400">Quit</button>
+        </div>
+    </header>
+    <main class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+    </main>
+    <div id="camera-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-base font-bold text-indigo-400">📷 Camera</h3>
+                <button type="button" class="text-slate-400 hover:text-white text-lg">✕</button>
+            </div>
+            <div class="relative rounded-xl overflow-hidden bg-black border border-slate-700">
+                <video id="camera-preview" autoplay playsinline muted class="w-full aspect-video object-cover"></video>
+                <span id="camera-recording-status" class="hidden absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">● Recording <span id="camera-recording-timer">00:00</span></span>
+            </div>
+            <canvas id="camera-canvas" class="hidden"></canvas>
+            <div class="flex gap-2 mt-4">
+                <button type="button" id="camera-photo-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium border border-yellow-400">📸 Photo</button>
+                <button type="button" id="camera-video-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium border border-red-500">🎥 Video</button>
+            </div>
+            <button type="button" id="camera-action-btn" class="w-full mt-3 bg-gradient-to-r from-blue-600 via-red-500 to-yellow-400 text-white px-4 py-2.5 rounded-xl font-bold text-sm">Take Photo</button>
+        </div>
+    </div>
+    <footer class="app-footer bg-slate-800 px-4 py-3">
+        <div class="max-w-4xl mx-auto flex items-end gap-2">
+            <input type="file" id="upload-input" accept="image/*,video/*" hidden>
+            <div class="upload-wrapper" id="upload-wrapper">
+                <button type="button" id="upload-btn" class="upload-button" title="Upload" aria-label="Upload" aria-haspopup="menu" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2-2V5h14v14H5v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5Zm-5.5 4.5-2.5 3.01-1.75-2.1L6 15h8l-2.5-3.5ZM8 10.5A1.5 1.5 0 1 0 8 7.5a1.5 1.5 0 0 0 0 3Z"/>
+                    </svg>
+                                    </button>
+                <div id="upload-menu" class="upload-menu" role="menu" aria-label="Upload options">
+                    <button type="button" class="upload-option upload-image-option" role="menuitem">
+                        <span class="upload-option-icon">🖼️</span>
+                        <span>Image</span>
+                    </button>
+                    <button type="button" class="upload-option upload-video-option" role="menuitem">
+                        <span class="upload-option-icon">🎥</span>
+                        <span>Vidéo</span>
+                    </button>
+                </div>
+            </div>
+            <button type="button" id="camera-btn" title="Take photo or video" aria-label="Take photo or video" class="camera-button bg-slate-700 hover:bg-slate-600 text-slate-300 p-2.5 rounded-full transition flex items-center justify-center border border-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 4 7.5 6H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-2.5L15 4H9Zm3 13a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                </svg>
+            </button>
+            <button id="record-btn" title="Record voice message" aria-label="Record voice message" class="bg-slate-700 hover:bg-slate-600 text-slate-300 p-2.5 rounded-full transition flex items-center justify-center border border-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H9v2h6v-2h-2v-3.08A7 7 0 0 0 19 11h-2z"/>
+                </svg>
+            </button>
+            <span id="recording-status" class="hidden text-xs text-red-400 font-medium whitespace-nowrap">
+                ● Recording <span id="recording-timer">00:00</span>
+            </span>
+            <button type="button" id="gif-btn" title="GIF Library" aria-label="GIF Library" class="gif-button">GIF</button>
+            <textarea id="message-input" rows="1" placeholder="Write a message..." class="flex-1 bg-slate-900 border-2 border-blue-500 rounded-2xl px-4 py-2.5 text-white focus:outline-none focus:border-yellow-400 resize-none max-h-32"></textarea>
+            <button id="send-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-full transition flex items-center justify-center gradient-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </footer>
+    <script src="chat_app.js"></script>
+</body>
+&copy; 2026 Sigui Yohan
+</html>
