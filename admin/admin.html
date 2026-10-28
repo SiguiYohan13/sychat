@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SY Chat - Admin Console</title>
+    <link rel='icon' type='image/x-icon' href='/chat.ico'>
+    <link rel='stylesheet' href="/systyle.css">
+</head>
+<body class="admin-page bg-slate-900 text-slate-100">
+
+    <header class="admin-header bg-slate-800 px-4 py-3 flex justify-between items-center">
+        <div class="admin-brand flex items-center gap-2">
+            <img src="/chat.png" alt="" class="header-logo">
+            <span class="font-bold text-indigo-400">SY Chat</span>
+            <span class="admin-badge">Admin console</span>
+        </div>
+        <div class="admin-header-right flex items-center gap-3">
+            <span id="admin-user" class="admin-user flex items-center gap-2 text-xs"></span>
+            <a href="/" class="admin-link text-xs">← Back to chat</a>
+            <button id="admin-logout" type="button" class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition border border-red-400">Log out</button>
+        </div>
+    </header>
+
+    <div id="admin-denied" class="admin-denied hidden">
+        <div class="event-card">
+            <div class="event-greeting">Access denied</div>
+            <div class="event-sub">This page is only for site administrators.</div>
+            <p class="mt-4"><a href="/" class="admin-link text-xs">← Back to chat</a></p>
+        </div>
+    </div>
+
+    <div id="admin-layout" class="admin-layout hidden">
+        <nav class="admin-nav" aria-label="Admin sections">
+            <button id="admin-nav-overview" type="button" class="dash-tab active">Overview</button>
+            <button id="admin-nav-users" type="button" class="dash-tab">Users</button>
+            <button id="admin-nav-rooms" type="button" class="dash-tab">Rooms</button>
+            <button id="admin-nav-reports" type="button" class="dash-tab">Reports</button>
+            <button id="admin-nav-notify" type="button" class="dash-tab">Notify</button>
+        </nav>
+
+        <main id="admin-main" class="admin-main"></main>
+    </div>
+    <script src="/admin/app.js" defer></script>
+</body>
+</html>

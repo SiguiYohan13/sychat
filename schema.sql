@@ -1,0 +1,48 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  username VARCHAR(20) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(64) UNIQUE NOT NULL,
+  owner_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS room_members (
+  room_id BIGINT REFERENCES rooms(id) ON DELETE CASCADE,
+  user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (room_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id BIGSERIAL PRIMARY KEY,
+  room_id BIGINT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  text TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS messages_room_created_idx
+  ON messages(room_id, created_at DESC, id DESC);
+
+CREATE TABLE IF NOT EXISTS room_bans (
+  room_id BIGINT REFERENCES rooms(id) ON DELETE CASCADE,
+  user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+  banned_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (room_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS ws_tickets (
+  ticket_hash CHAR(64) PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ws_tickets_expires_idx ON ws_tickets(expires_at);

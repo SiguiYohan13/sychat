@@ -1,0 +1,10 @@
+node_modules/
+.env
+Sy_Cpp/
+*.exe
+api_key.txt
+*.py
+*.pyc
+__pycache__/
+anna.png
+data_backup.sql
