@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/server.ts",
-    "build": "tsc && esbuild src/client.ts --bundle --minify --outfile=public/app.js",
+    "build": "tsc && esbuild src/client.ts --bundle --minify --outfile=public/chat_app.js",
     "start": "node dist/server.js"
   },
   "dependencies": {
