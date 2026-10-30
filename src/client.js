@@ -9,8 +9,8 @@ const $ = (id) => document.getElementById(id);
 
 // We wrap the execution logic inside DOMContentLoaded so it waits for the HTML
 document.addEventListener("DOMContentLoaded", () => {
-    const auth = $("auth");
-    const room = $("room");
+    const auth = $("auth-modal");
+    const room = $("room-modal");
     const chat = $("chat");
     const authForm = $("authForm");
 
