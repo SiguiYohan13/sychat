@@ -5373,9 +5373,10 @@ async function start() {
 
   httpServer.listen(
     PORT,
+    '0.0.0.0',
     () => {
       console.log(
-        `SY Chat Web secure server listening on http://localhost:${PORT}`,
+        `SY Chat Web v1.0.0 secure server listening on port ${PORT}`,
       );
     },
   );
