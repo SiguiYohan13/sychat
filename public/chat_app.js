@@ -2920,6 +2920,12 @@
 
             button.title = label;
             button.setAttribute("aria-label", label);
+
+            const labelNode = button.querySelector(".meeting-button-label");
+            if (labelNode) {
+                labelNode.textContent = meeting.joined ? "In call" : meeting.count > 0 ? "Join meeting" : "Meeting";
+            }
+
             setCountBadge(button, meeting.count);
         }
 
