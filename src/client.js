@@ -9,8 +9,8 @@ const $ = (id) => document.getElementById(id);
 
 // Force the selectors to run ONLY after the index.html finishes parsing
 document.addEventListener("DOMContentLoaded", () => {
-    const auth = $("auth");
-    const room = $("room");
+    const auth = $("auth-modal");
+    const room = $("room-modal");
     const chat = $("chat");
     const authForm = $("authForm");
 
