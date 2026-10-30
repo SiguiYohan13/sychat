@@ -1321,49 +1321,61 @@ body:has(#events-modal:not(.hidden)) .upload-wrapper { display: none !important;
 
 body:has(#attach-modal:not(.hidden), #meeting-modal:not(.hidden)) .upload-wrapper { display: none !important; }
 
-/* --- Meeting button (composer bar) --- */
+/* --- Meeting button (composer bar): pill with icon + label --- */
 .meeting-button {
     position: relative;
-    display: flex;
+    display: inline-flex;
     flex: 0 0 auto;
     align-items: center;
-    justify-content: center;
-    width: 42px;
+    gap: 8px;
     height: 42px;
-    border-radius: 999px;
-    background: #334155;
-    color: #93c5fd;
-    border: 1px solid #3b82f6;
+    padding: 0 16px 0 12px;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background:
+        linear-gradient(#0f172a, #0f172a) padding-box,
+        var(--gradient) border-box;
+    color: #e0e7ff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    white-space: nowrap;
     cursor: pointer;
-    transition: transform .2s, background-color .2s, box-shadow .2s;
+    transition: transform .2s, box-shadow .2s, color .2s;
 }
+
+.meeting-button svg { width: 20px; height: 20px; flex: 0 0 auto; }
 
 .meeting-button:hover {
-    background: #475569;
+    color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 0 14px rgba(37, 99, 235, .35);
+    box-shadow: 0 0 14px rgba(37, 99, 235, .45), 0 0 20px rgba(239, 68, 68, .30);
 }
 
-.meeting-button .count-badge { position: absolute; top: -7px; right: -7px; }
+.meeting-button .count-badge { position: absolute; top: -8px; right: -6px; }
 
-/* Someone is in the call: blue / red / yellow pulse + participant count */
+/* Someone is in the call: filled blue / red / yellow gradient, pulsing glow + count */
 .meeting-button.meeting-live {
     color: #fff;
-    border: 2px solid transparent;
-    background:
-        linear-gradient(#1e1b4b, #1e1b4b) padding-box,
-        var(--gradient) border-box;
+    background: var(--gradient) border-box;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .65);
     animation: eventPulse 1.6s ease-in-out infinite;
 }
 
-/* You are in the call: steady green glow */
+/* You are in the call: steady green */
 .meeting-button.meeting-in {
-    border-color: #22c55e;
-    background:
-        linear-gradient(#14532d, #14532d) padding-box,
-        linear-gradient(#22c55e, #22c55e) border-box;
+    color: #fff;
+    border-color: #86efac;
+    background: linear-gradient(#16a34a, #15803d) border-box;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
     animation: none;
     box-shadow: 0 0 14px rgba(34, 197, 94, .65);
+}
+
+/* Narrow screens: icon only */
+@media (max-width: 640px) {
+    .meeting-button { width: 42px; padding: 0; justify-content: center; }
+    .meeting-button-label { display: none; }
 }
 
 /* --- Send file / link window --- */
