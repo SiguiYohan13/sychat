@@ -18,7 +18,8 @@ import { join } from "node:path";
 import { z } from "zod";
 
 const isProd = process.env.NODE_ENV === "production";
-const PORT = Number(process.env.PORT ?? 3000);
+/* Render sets PORT (default 10000). Locally we fall back to 3000. */
+const PORT = Number(process.env.PORT) || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET ?? "";
 const DATABASE_URL = process.env.DATABASE_URL ?? "";
 const GIPHY_API_KEY = (process.env.GIPHY_API_KEY ?? "").trim();
@@ -31,10 +32,44 @@ if (!DATABASE_URL) {
   throw new Error("DATABASE_URL is required.");
 }
 
+/*
+ * Database SSL (DATABASE_SSL):
+ *   unset / "auto" -> SSL only for Render's EXTERNAL url (host ends with
+ *                     .render.com). Render's INTERNAL url needs no SSL.
+ *   "false"        -> never use SSL
+ *   "require"      -> SSL without certificate verification
+ *   "verify"       -> SSL with full certificate verification
+ */
+function databaseSsl(): false | { rejectUnauthorized: boolean } {
+  const mode = (process.env.DATABASE_SSL ?? "auto").trim().toLowerCase();
+
+  if (["false", "off", "disable", "0", "no"].includes(mode)) {
+    return false;
+  }
+
+  if (mode === "verify") {
+    return { rejectUnauthorized: true };
+  }
+
+  if (["true", "on", "require", "1", "yes"].includes(mode)) {
+    return { rejectUnauthorized: false };
+  }
+
+  try {
+    if (new URL(DATABASE_URL).hostname.endsWith(".render.com")) {
+      return { rejectUnauthorized: false };
+    }
+  } catch (_) {
+    /* not a URL: let pg report the problem */
+  }
+
+  return false;
+}
+
 const pool = new Pool({
   connectionString: DATABASE_URL,
   max: 10,
-  ssl: isProd ? { rejectUnauthorized: true } : undefined,
+  ssl: databaseSsl(),
 });
 
 pool.on("error", (error) => {
@@ -76,6 +111,17 @@ function livekitHttpUrl() {
 /* The browser must be allowed to open the LiveKit signalling connection. */
 const livekitConnectSources: string[] = [];
 
+/* Explicit wss:// for this site (Render sets RENDER_EXTERNAL_HOSTNAME; use PUBLIC_HOSTNAME for a custom domain). */
+const publicHostname = (
+  process.env.PUBLIC_HOSTNAME ??
+  process.env.RENDER_EXTERNAL_HOSTNAME ??
+  ""
+).trim();
+
+const publicConnectSources = publicHostname
+  ? [`https://${publicHostname}`, `wss://${publicHostname}`]
+  : [];
+
 if (livekitConfigured) {
   try {
     const host = new URL(livekitHttpUrl()).host;
@@ -91,7 +137,25 @@ if (livekitConfigured) {
   }
 }
 
-app.set("trust proxy", isProd ? 1 : 0);
+/*
+ * Behind Render's proxies. TRUST_PROXY = number of proxy hops in front of the
+ * app (default 1 in production). If every visitor seems to share one IP (the
+ * rate limit hits everybody at once), raise it and check the result at
+ * /api/admin/client-ip while logged in as an admin.
+ */
+const trustProxyHops = Number(process.env.TRUST_PROXY ?? (isProd ? 1 : 0));
+
+app.set(
+  "trust proxy",
+  Number.isInteger(trustProxyHops) && trustProxyHops >= 0
+    ? trustProxyHops
+    : 1,
+);
+
+/* Render health check: no session, no database, answers instantly. */
+app.get("/healthz", (_req, res) => {
+  res.status(200).type("text/plain").send("ok");
+});
 
 app.use(
   helmet({
@@ -112,6 +176,7 @@ app.use(
           "'self'",
           "https://giphy.com",
           "https://*.giphy.com",
+          ...publicConnectSources,
           ...livekitConnectSources,
         ],
         objectSrc: ["'none'"],
@@ -3149,6 +3214,23 @@ app.post(
   },
 );
 
+/* Helps to check TRUST_PROXY behind a proxy: "ip" must be YOUR public IP. */
+app.get(
+  "/api/admin/client-ip",
+  requireAuth,
+  requireAdmin,
+  adminLimiter,
+  (req, res) => {
+    res.json({
+      ip: req.ip,
+      ips: req.ips,
+      xForwardedFor: req.headers["x-forwarded-for"] ?? null,
+      trustProxy: app.get("trust proxy"),
+      secure: req.secure,
+    });
+  },
+);
+
 /* -------------------------------------------------------------------------- */
 /* Admin notifications (text + optional image) and image delivery             */
 /* -------------------------------------------------------------------------- */
@@ -5361,6 +5443,82 @@ app.use(
 );
 
 /* -------------------------------------------------------------------------- */
+/* Keep-alive, health and shutdown (Render)                                   */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Proxies close idle connections, and Render recommends server-side pings.
+ * Browsers answer ping frames automatically. A socket that did not answer the
+ * previous ping is dead and gets terminated (its "close" handler cleans up).
+ */
+const HEARTBEAT_INTERVAL_MS = 30_000;
+
+type HeartbeatSocket = WebSocket & { isAlive?: boolean };
+
+wss.on("connection", (ws: HeartbeatSocket) => {
+  ws.isAlive = true;
+
+  ws.on("pong", () => {
+    ws.isAlive = true;
+  });
+});
+
+const heartbeatTimer = setInterval(() => {
+  wss.clients.forEach((client) => {
+    const ws = client as HeartbeatSocket;
+
+    if (ws.isAlive === false) {
+      ws.terminate();
+      return;
+    }
+
+    ws.isAlive = false;
+
+    try {
+      ws.ping();
+    } catch (_) {
+      /* socket already closing */
+    }
+  });
+}, HEARTBEAT_INTERVAL_MS);
+
+heartbeatTimer.unref();
+
+/* Render sends SIGTERM on every deploy/restart: close cleanly, clients reconnect. */
+let shuttingDown = false;
+
+function shutdown(signal: string) {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+  console.log(`${signal} received: shutting down gracefully...`);
+
+  clearInterval(heartbeatTimer);
+
+  wss.clients.forEach((client) => {
+    try {
+      client.close(1001, "Server restarting");
+    } catch (_) {
+      /* ignore */
+    }
+  });
+
+  httpServer.close(() => {
+    pool
+      .end()
+      .catch(() => undefined)
+      .finally(() => process.exit(0));
+  });
+
+  setTimeout(() => process.exit(0), 10_000).unref();
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+
+/* -------------------------------------------------------------------------- */
 /* Start                                                                      */
 /* -------------------------------------------------------------------------- */
 
@@ -5371,12 +5529,19 @@ async function start() {
     "SELECT 1",
   );
 
+  /*
+   * Longer than the proxy's idle timeout, so the proxy never reuses a
+   * connection that Node already closed (prevents random 502 errors).
+   */
+  httpServer.keepAliveTimeout = 120_000;
+  httpServer.headersTimeout = 125_000;
+
   httpServer.listen(
     PORT,
-    '0.0.0.0',
+    "0.0.0.0",
     () => {
       console.log(
-        `SY Chat Web v1.0.0 secure server listening on port ${PORT}`,
+        `SY Chat Web v1.0.0 listening on 0.0.0.0:${PORT} (${isProd ? "production" : "development"})`,
       );
     },
   );
