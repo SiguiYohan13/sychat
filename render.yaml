@@ -1,16 +1,3 @@
-# Render Blueprint for SY Chat Web.
-# Render dashboard -> New -> Blueprint -> pick this repository.
-#
-# Free plans are fine to try the app, but:
-#   - a free web service sleeps after 15 minutes without traffic (about 1 minute to wake up)
-#   - a free Postgres database EXPIRES 30 days after creation
-# For real use, change both plans below (for example web: starter, database: basic-256mb).
-
-databases:
-  - name: sy-chat-db
-    plan: free
-    region: frankfurt       
-    ipAllowList: []        
 
 services:
   - type: web
@@ -34,7 +21,6 @@ services:
         generateValue: true
       - key: TRUST_PROXY
         value: "1"
-      # Asked in the dashboard (never stored in the repository):
       - key: ADMIN_USERNAME
         sync: false
       - key: GIPHY_API_KEY
