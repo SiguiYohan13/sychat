@@ -14,10 +14,11 @@ Hosted at [sychat.onrender.com](https://onrender.dev).
 * **Admin Control Panel**: Robust moderation tools for room management, user bans, and reporting systems to prevent cyberbullying or harassment.
 * **Events & Birthdays**: Stay connected with community celebrations.
 * **Real-time Notifications**: Instant updates for new messages and platform events.
+* **Group Video/Audio Call**: Real-time video & audio call or meeting.
 
 ## 🛠 Tech Stack
 
-* **Frontend**: HTML, CSS, JavaScript, TypeScript
+* **Frontend**: HTML, CSS, JavaScript
 * **Backend**: Node.js, TypeScript
 * **Database**: PostgreSQL
 
