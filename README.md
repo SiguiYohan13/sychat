@@ -2,7 +2,7 @@
 
 **SY Chat** is a real-time web-based chat application that allows users to create accounts, join secure chat rooms, share multimedia content, and connect with others instantly.
 
-Hosted at [sychat.onrender.com](https://sychat.onrender.dev).
+Hosted at [sychat.onrender.com](https://sychat.onrender.com).
 
 ## 🚀 Features
 
